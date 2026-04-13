@@ -910,7 +910,7 @@ def render_council_page(request: Request) -> HTMLResponse:
         if k == "비대위원장단": continue
         rws = "".join(f'<div class="executive-member-row"><div style="display:flex; flex-direction:column; gap:4px;"><div style="display:flex; align-items:center; gap:8px;"><span class="executive-member-role">{h(m.get("role"))}</span><span class="executive-member-name">{h(m.get("name"))}</span></div><span style="font-size:13px; color:var(--muted);">{h(m.get("email")) or ""}</span></div></div>' for m in s_exec(v))
         desc_html = f'<p class="muted" style="margin-bottom:12px; font-size:14px; line-height:1.6;">{desc_map.get(k, "")}</p>' if k in desc_map else ""
-        branch_cards.append(f'<details class="guide-detail" open style="margin-bottom: 12px;"><summary style="font-size:16px; padding:16px;">{h(k)} <span style="font-size:14px; font-weight:normal; color:var(--muted);">({len(v)}명)</span></summary><div class="detail-body" style="padding-top:0px;">{desc_html}<div class="executive-member-list">{rws}</div></div></details>')
+        branch_cards.append(f'<details class="guide-detail" open style="margin-bottom: 12px;"><summary style="font-size:16px; padding:16px;">{h(k)}</summary><div class="detail-body" style="padding-top:0px;">{desc_html}<div class="executive-member-list">{rws}</div></div></details>')
     
     ldr = "".join(f'<div class="executive-top-member"><div style="display:flex; flex-direction:column; gap:4px; text-align:left;"><div style="display:flex; align-items:center; gap:8px;"><span class="executive-top-role">{h(m.get("role"))}</span><span class="executive-top-name">{h(m.get("name"))}</span></div><span style="font-size:13px; color:rgba(255,255,255,0.7);">{h(m.get("email")) or ""}</span></div></div>' for m in s_exec(ARTS_EXECUTIVE_GROUPS.get("비대위원장단", [])))
     
@@ -970,9 +970,6 @@ def render_council_page(request: Request) -> HTMLResponse:
                 </div>
             </div>
         </details>
-    </section>
-            <div class="exec-grid">{"".join(branch_cards)}</div>
-        </div>
     </section>
     
     <section id="council-members" class="council-block" style="margin-top:24px;">
