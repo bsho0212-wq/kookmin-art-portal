@@ -122,6 +122,8 @@ def default_data() -> dict:
         "suggestions": [],
         "home_content": dict(HOME_CONTENT_DEFAULTS),
         "council_members": [dict(member) for member in DEFAULT_COUNCIL_MEMBERS],
+        "arts_executive_groups": dict(ARTS_EXECUTIVE_GROUPS),
+        "arts_council_type": "학생회",
     }
 
 
@@ -150,7 +152,7 @@ def load_data() -> dict:
 
 
 def save_data(data: dict | None = None) -> None:
-    p = data or {"notices": notices, "documents": documents, "partners": partners, "meetings": meetings, "regulations": regulations, "suggestions": suggestions, "home_content": home_content, "council_members": council_members}
+    p = data or {"notices": notices, "documents": documents, "partners": partners, "meetings": meetings, "regulations": regulations, "suggestions": suggestions, "home_content": home_content, "council_members": council_members, "arts_executive_groups": arts_executive_groups, "arts_council_type": arts_council_type}
     try:
         supabase.storage.from_(BUCKET_NAME).remove(["site_data.json"])
         supabase.storage.from_(BUCKET_NAME).upload("site_data.json", json.dumps(p, ensure_ascii=False, indent=2).encode('utf-8'), {"content-type": "application/json"})
@@ -166,6 +168,8 @@ regulations = loaded_data["regulations"]
 suggestions = loaded_data["suggestions"]
 council_members = loaded_data["council_members"]
 home_content = {**HOME_CONTENT_DEFAULTS, **loaded_data.get("home_content", {})}
+arts_executive_groups = loaded_data.get("arts_executive_groups", dict(ARTS_EXECUTIVE_GROUPS))
+arts_council_type = loaded_data.get("arts_council_type", "학생회")
 
 
 
@@ -272,12 +276,12 @@ def render_layout(title: str, body: str) -> HTMLResponse:
                 background: rgba(255,255,255,0.14);
                 color: rgba(255,255,255,0.94);
                 font-size: 12px;
-                letter-spacing: 0.08em;
+                
                 text-transform: uppercase;
                 border: 1px solid rgba(255,255,255,0.16);
                 box-shadow: none;
             }}
-            header h1 {{ margin: 10px 0 0; font-size: 28px; letter-spacing: -0.04em; font-weight: 750; }}
+            header h1 {{ margin: 10px 0 0; font-size: 28px;  font-weight: 750; }}
             .brand-subtitle {{ margin: 8px 0 0; color: rgba(255,255,255,0.72); font-size: 14px; line-height: 1.6; }}
             nav {{
                 margin-top: 18px;
@@ -321,7 +325,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             }}
             .hero-grid {{ display: grid; grid-template-columns: 1.6fr 0.9fr; gap: 18px; align-items: stretch; }}
             .hero-side {{ display: grid; gap: 14px; }}
-            .hero h2 {{ font-size: 36px; line-height: 1.08; margin-bottom: 14px; letter-spacing: -0.05em; max-width: 760px; }}
+            .hero h2 {{ font-size: 36px; line-height: 1.08; margin-bottom: 14px;  max-width: 760px; }}
             .hero p {{ max-width: 760px; color: var(--muted); font-size: 16px; line-height: 1.8; }}
             .metric-card {{
                 background: linear-gradient(135deg, #004f9f 0%, #2f6fb3 58%, #18a572 100%);
@@ -343,7 +347,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
                 pointer-events: none;
             }}
             .metric-card h3 {{ margin: 0 0 8px; font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 500; }}
-            .metric-value {{ font-size: 34px; font-weight: 700; letter-spacing: -0.04em; margin: 0; }}
+            .metric-value {{ font-size: 34px; font-weight: 700;  margin: 0; }}
             .metric-meta {{ margin-top: 8px; color: rgba(255,255,255,0.7); font-size: 13px; }}
             .card {{
                 background: var(--panel-strong);
@@ -396,14 +400,14 @@ def render_layout(title: str, body: str) -> HTMLResponse:
                 color: var(--accent);
                 font-size: 12px;
                 font-weight: 800;
-                letter-spacing: 0.12em;
+                
                 text-transform: uppercase;
                 margin-bottom: 8px;
             }}
             .member-name {{
                 font-size: 24px;
                 font-weight: 700;
-                letter-spacing: -0.04em;
+                
                 margin: 0 0 6px;
             }}
             .member-division {{
@@ -450,7 +454,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             .major-cluster-card h3 {{
                 margin: 0 0 8px;
                 font-size: 22px;
-                letter-spacing: -0.03em;
+                
             }}
             .major-cluster-meta {{
                 color: var(--muted);
@@ -461,6 +465,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 12px;
+                align-items: start;
             }}
             .major-unit {{
                 background: rgba(255,255,255,0.88);
@@ -473,7 +478,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             .major-unit h4 {{
                 margin: 0;
                 font-size: 18px;
-                letter-spacing: -0.02em;
+                
             }}
             .major-member-pair {{
                 display: grid;
@@ -492,7 +497,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             .major-member-role {{
                 font-size: 13px;
                 font-weight: 800;
-                letter-spacing: 0.08em;
+                
                 color: var(--accent);
                 text-transform: uppercase;
             }}
@@ -506,8 +511,6 @@ def render_layout(title: str, body: str) -> HTMLResponse:
                 gap: 18px;
             }}
             .executive-top {{
-                max-width: 520px;
-                margin: 0 auto;
                 background: linear-gradient(135deg, #004f9f 0%, #2f6fb3 100%);
                 color: white;
                 border-radius: 24px;
@@ -518,7 +521,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             .executive-top h3 {{
                 margin: 0 0 8px;
                 font-size: 24px;
-                letter-spacing: -0.03em;
+                
                 color: white;
             }}
             .executive-top p {{
@@ -572,7 +575,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             .executive-branch-head h3 {{
                 margin: 0;
                 font-size: 20px;
-                letter-spacing: -0.02em;
+                
             }}
             .executive-member-list {{
                 display: grid;
@@ -606,8 +609,8 @@ def render_layout(title: str, body: str) -> HTMLResponse:
                 gap: 18px;
                 margin-bottom: 22px;
             }}
-            h2 {{ margin-top: 0; margin-bottom: 12px; letter-spacing: -0.04em; }}
-            h3 {{ margin-top: 0; margin-bottom: 8px; letter-spacing: -0.02em; }}
+            h2 {{ margin-top: 0; margin-bottom: 12px;  }}
+            h3 {{ margin-top: 0; margin-bottom: 8px;  }}
             p {{ line-height: 1.7; margin-top: 0; }}
             .meta {{ color: var(--muted); font-size: 13px; }}
             .btn {{
@@ -681,7 +684,7 @@ def render_layout(title: str, body: str) -> HTMLResponse:
             .actions {{ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }}
             .empty {{ color: var(--muted); }}
             .section-title {{ display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }}
-            .eyebrow {{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #004f9f; margin-bottom: 10px; font-weight: 800; }}
+            .eyebrow {{ font-size: 12px; text-transform: uppercase;  color: #004f9f; margin-bottom: 10px; font-weight: 800; }}
             .muted {{ color: var(--muted); }}
             .regulation-guide {{
                 display: grid;
@@ -913,13 +916,13 @@ def render_council_page(request: Request) -> HTMLResponse:
     }
 
     branch_cards = []
-    for k, v in ARTS_EXECUTIVE_GROUPS.items():
+    for k, v in arts_executive_groups.items():
         if k == "비대위원장단": continue
         rws = "".join(f'<div class="executive-member-row"><div style="display:flex; flex-direction:column; gap:4px;"><div style="display:flex; align-items:center; gap:8px;"><span class="executive-member-role">{h(m.get("role"))}</span><span class="executive-member-name">{h(m.get("name"))}</span></div><span style="font-size:13px; color:var(--muted);">{h(m.get("email")) or ""}</span></div></div>' for m in s_exec(v))
         desc_html = f'<p class="muted" style="margin-bottom:12px; font-size:14px; line-height:1.6;">{desc_map.get(k, "")}</p>' if k in desc_map else ""
-        branch_cards.append(f'<details class="guide-detail" open style="margin-bottom: 12px;"><summary style="font-size:16px; padding:16px;">{h(k)}</summary><div class="detail-body" style="padding-top:0px;">{desc_html}<div class="executive-member-list">{rws}</div></div></details>')
+        branch_cards.append(f'<details name="arts-branch" class="guide-detail" style="margin-bottom: 12px;"><summary style="font-size:16px; padding:16px;">{h(k)}</summary><div class="detail-body" style="padding-top:0px;">{desc_html}<div class="executive-member-list">{rws}</div></div></details>')
     
-    ldr = "".join(f'<div class="executive-top-member"><div style="display:flex; flex-direction:column; gap:4px; text-align:left;"><div style="display:flex; align-items:center; gap:8px;"><span class="executive-top-role">{h(m.get("role"))}</span><span class="executive-top-name">{h(m.get("name"))}</span></div><span style="font-size:13px; color:rgba(255,255,255,0.7);">{h(m.get("email")) or ""}</span></div></div>' for m in s_exec(ARTS_EXECUTIVE_GROUPS.get("비대위원장단", [])))
+    ldr = "".join(f'<div class="executive-top-member"><div style="display:flex; flex-direction:column; gap:4px; text-align:left;"><div style="display:flex; align-items:center; gap:8px;"><span class="executive-top-role">{h(m.get("role"))}</span><span class="executive-top-name">{h(m.get("name"))}</span></div><span style="font-size:13px; color:rgba(255,255,255,0.7);">{h(m.get("email")) or ""}</span></div></div>' for m in s_exec(arts_executive_groups.get("비대위원장단", [])))
     
     major_clusters = [("공연예술학부", ["영화전공", "연극전공", "무용전공"]),("미술학부", ["회화전공", "입체미술전공"]),("음악학부", ["관현악전공", "피아노전공", "성악전공", "작곡전공"])]
     cluster_cards = []
@@ -947,12 +950,13 @@ def render_council_page(request: Request) -> HTMLResponse:
     </style>
     <div class="hero">
         <div class="eyebrow">Council Directory</div>
-        <h2>예술대학 학생회 및 대표자 안내</h2>
-        <p>학우 여러분을 위해 일하는 예술대학 학생회와 각 전공 대표자 명단입니다.</p>
+        <h2>예술대학 {arts_council_type} 및 대표자 안내</h2>
+        <p>학우 여러분을 위해 일하는 예술대학 {arts_council_type}와 각 전공 대표자 명단입니다.</p>
         <div class="council-section-anchor">
-            <a class="btn btn-light" href="#arts-executive">학생회 명단</a>
+            <a class="btn btn-light" href="#arts-executive">{arts_council_type} 명단</a>
             <a class="btn btn-light" href="#council-members">대표자 명단</a>
-            {"<a class=\"btn\" href=\"/council/new\">대표자 추가</a>" if is_adm else ""}
+            {"<a class=\"btn\" href=\"/council/new\">전공 대표자 추가</a>" if is_adm else ""}
+            {"<a class=\"btn btn-light\" href=\"/admin/arts-council\">예대 명단 관리</a>" if is_adm else ""}
         </div>
     </div>
     
@@ -961,16 +965,15 @@ def render_council_page(request: Request) -> HTMLResponse:
             <summary style="font-size:22px; font-weight:800; padding:20px;">
                 <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
                     <span class="eyebrow" style="font-size:12px;">Arts Student Council</span>
-                    <span>예술대학 학생회</span>
+                    <span>예술대학 {arts_council_type}</span>
                 </div>
             </summary>
             <div class="detail-body">
-                <p class="muted" style="margin-bottom:20px;">예술대학 소속 학생들을 위해 행정, 기획, 소통을 담당하는 학생회 명단입니다.</p>
+                <p class="muted" style="margin-bottom:20px;">예술대학 소속 학생들을 위해 행정, 기획, 소통을 담당하는 명단입니다.</p>
                 <div class="executive-hierarchy">
                     <section class="executive-top" style="margin-bottom:16px;">
-                        <div class="eyebrow" style="color:rgba(255,255,255,0.74);">Leadership</div>
                         <h3>비대위원장단</h3>
-                        <p>예술대학 학생회를 총괄합니다.</p>
+                        <p>예술대학 학생 자치를 총괄합니다.</p>
                         <div class="executive-top-members">{ldr}</div>
                     </section>
                     <div class="exec-grid" style="margin-top:24px;">{"".join(branch_cards)}</div>
