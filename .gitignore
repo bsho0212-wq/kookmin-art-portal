@@ -1,1 +1,7 @@
 .vercel
+.venv
+__pycache__/
+.idea/
+data/site_data.json
+uploads/
+.env
