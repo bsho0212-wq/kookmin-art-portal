@@ -4,7 +4,7 @@ import json
 import os
 import re
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 import uvicorn
 from supabase import create_client, Client
@@ -827,6 +827,13 @@ def render_layout(title: str, body: str) -> HTMLResponse:
 def render_home_page() -> HTMLResponse:
     notice_cards = "".join(f'<div class="member-card"><div class="member-role">{h(n.get("category"))}</div><p class="member-name" style="font-size:18px;">{h(n.get("title"))}</p><p class="member-meta">{h(n.get("created_at"))}</p></div>' for n in notices[:3])
     if not notice_cards: notice_cards = '<div class="card empty">등록된 최근 공지사항이 없습니다.</div>'
+    
+    # Auto-calculate office status (KST: Weekdays 09:00~18:00 -> "재실중")
+    kst = datetime.now(timezone(timedelta(hours=9)))
+    is_working_hours = (kst.weekday() < 5) and (9 <= kst.hour < 18)
+    
+    office_val = "재실중" if is_working_hours else home_content.get("office_status_value", "부재중")
+    
     body = f'''
     <div class="hero-grid">
         <section class="hero">
@@ -838,7 +845,7 @@ def render_home_page() -> HTMLResponse:
             <div class="actions"><a class="btn" href="/notices">공지사항 보기</a><a class="btn btn-light" href="/archive">통합 자료 보기</a></div>
         </section>
         <div class="hero-side">
-            <div class="metric-card"><h3>{h(home_content.get("office_status_title"))}</h3><p class="metric-value">{h(home_content.get("office_status_value"))}</p><div class="metric-meta">{h(home_content.get("office_status_meta"))}</div></div>
+            <div class="metric-card"><h3>{h(home_content.get("office_status_title"))}</h3><p class="metric-value">{h(office_val)}</p><div class="metric-meta">{h(home_content.get("office_status_meta"))}</div></div>
             <div class="card"><div class="eyebrow">Vision</div><h3>{h(home_content.get("vision_title"))}</h3><p class="muted">{h(home_content.get("vision_description"))}</p></div>
         </div>
     </div>
