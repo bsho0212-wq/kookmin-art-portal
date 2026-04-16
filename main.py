@@ -1057,7 +1057,7 @@ def render_document_edit_form_page(document: dict, index: int) -> HTMLResponse:
             <label>문서명<input type="text" name="title" value="{h(document.get('title'))}" required></label>
             <label>카테고리<input type="text" name="category" value="{h(document.get('category'))}"></label>
             <label>설명<textarea name="description">{h(document.get('description'))}</textarea></label>
-            <label>새 파일 업로드<input type="file" name="file"></label>
+            <label>새 파일 추가 (기존 파일에 덮어씌움)<input type="file" name="files" multiple></label>
             <p class="muted">파일을 새로 올리지 않으면 기존 첨부파일을 유지합니다.</p>
             <div class="actions">
                 <button class="btn" type="submit">수정 저장</button>
@@ -1190,7 +1190,13 @@ def render_documents_page(request: Request) -> HTMLResponse:
     is_adm = is_admin(request)
     items = []
     for idx, d in enumerate(documents):
-        dn = f'<a class="btn" href="{h(d.get("file"))}">다운로드</a>' if d.get("file") else ''
+        dns = []
+        if d.get("files"):
+            for i, f_url in enumerate(d["files"]):
+                dns.append(f'<a class="btn" href="{h(f_url)}">첨부파일 {i+1} 다운로드</a>')
+        elif d.get("file"):
+            dns.append(f'<a class="btn" href="{h(d.get("file"))}">다운로드</a>')
+        dn = "".join(dns)
         mg = f'<a class="btn btn-light" href="/documents/{idx}/edit">수정</a><form class="inline-form" action="/documents/{idx}/delete" method="post"><button class="btn btn-light" type="submit">삭제</button></form>' if is_adm else ''
         items.append(f'<div class="card"><div class="section-title"><h2>{h(d.get("title"))}</h2><span class="pill">{h(d.get("category"))}</span></div><p>{h(d.get("description"))}</p><div class="meta">등록일 {h(d.get("created_at"))}</div><div class="actions">{dn}{mg}</div></div>')
     body = f'''<div class="hero"><div class="eyebrow">Document Archive</div><h2>문서자료실</h2><p>학우 여러분이 학교생활이나 행정 처리 중 필요한 문서 양식을 내려받을 수 있는 공간입니다.</p><div class="actions">{"<a class=\"btn\" href=\"/documents/new\">문서 업로드</a>" if is_adm else ""}</div></div>{"".join(items) if items else "<div class=\"card empty\">없음</div>"}'''
@@ -1203,7 +1209,7 @@ def render_document_form_page() -> HTMLResponse:
             <label>문서명<input type="text" name="title" required></label>
             <label>카테고리<input type="text" name="category" value="행정서식"></label>
             <label>설명<textarea name="description"></textarea></label>
-            <label>파일<input type="file" name="file" required></label>
+            <label>파일 (여러 개 선택 가능)<input type="file" name="files" multiple required></label>
             <button class="btn" type="submit">업로드</button>
         </form>
     </div>
@@ -1805,16 +1811,20 @@ async def create_document(request: Request,
     title: str = Form(...),
     category: str = Form("행정서식"),
     description: str = Form(""),
-    file: UploadFile = File(...),
+    files: list[UploadFile] = File(...),
 ):
     if require_admin(request): return require_admin(request)
-    file_path = save_upload(file, "documents")
+    file_paths = []
+    for f in files:
+        fp = save_upload(f, "documents")
+        if fp: file_paths.append(fp)
 
     documents.insert(0, {
         "title": title,
         "category": category,
         "description": description,
-        "file": file_path,
+        "files": file_paths,
+        "file": file_paths[0] if file_paths else None,
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
     save_data()
@@ -2113,14 +2123,28 @@ async def update_document(request: Request,
     title: str = Form(...),
     category: str = Form("행정서식"),
     description: str = Form(""),
-    file: UploadFile = File(None),
+    files: list[UploadFile] = File(None),
 ):
     if require_admin(request): return require_admin(request)
     document = get_item(documents, document_index)
     if document is not None:
-        if file and file.filename:
-            delete_uploaded_file(document.get("file"))
-            document["file"] = save_upload(file, "documents")
+        if files and len(files) > 0 and files[0].filename:
+            # Delete old files
+            if document.get("files"):
+                for f in document["files"]: delete_uploaded_file(f)
+            elif document.get("file"):
+                delete_uploaded_file(document.get("file"))
+            
+            file_paths = []
+            for f in files:
+                if f.filename:
+                    fp = save_upload(f, "documents")
+                    if fp: file_paths.append(fp)
+            
+            if file_paths:
+                document["files"] = file_paths
+                document["file"] = file_paths[0]
+                
         document.update({
             "title": title,
             "category": category,
@@ -2135,7 +2159,10 @@ async def delete_document(request: Request, document_index: int):
     if require_admin(request): return require_admin(request)
     document = get_item(documents, document_index)
     if document is not None:
-        delete_uploaded_file(document.get("file"))
+        if document.get("files"):
+            for f in document["files"]: delete_uploaded_file(f)
+        elif document.get("file"):
+            delete_uploaded_file(document.get("file"))
         documents.pop(document_index)
         save_data()
     return RedirectResponse("/documents", status_code=302)
