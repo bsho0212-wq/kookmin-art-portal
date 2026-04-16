@@ -2012,12 +2012,22 @@ async def create_regulation(request: Request,
     version: str = Form(...),
     effective_date: str = Form(...),
     description: str = Form(""),
+    files: list[UploadFile] = File(None),
     file: UploadFile = File(None),
 ):
     if require_admin(request): return require_admin(request)
-    file_path = save_upload(file, "regulations")
+    file_paths = []
+    if files:
+        for f in files:
+            if f and f.filename:
+                fp = save_upload(f, "regulations")
+                if fp: file_paths.append(fp)
+    elif file and file.filename:
+        fp = save_upload(file, "regulations")
+        if fp: file_paths.append(fp)
 
     regulations.insert(0, {
+        "files": file_paths,
         "title": title,
         "version": version,
         "effective_date": effective_date,
@@ -2046,14 +2056,28 @@ async def update_regulation(request: Request,
     version: str = Form(...),
     effective_date: str = Form(...),
     description: str = Form(""),
+    files: list[UploadFile] = File(None),
     file: UploadFile = File(None),
 ):
     if require_admin(request): return require_admin(request)
     regulation = get_item(regulations, regulation_index)
     if regulation is not None:
-        if file and file.filename:
-            delete_uploaded_file(regulation.get("file"))
-            regulation["file"] = save_upload(file, "regulations")
+        new_files = files if files and files[0].filename else ([file] if file and file.filename else [])
+        if new_files:
+            if regulation.get("files"):
+                for f in regulation["files"]: delete_uploaded_file(f)
+            elif regulation.get("file"):
+                delete_uploaded_file(regulation.get("file"))
+            
+            file_paths = []
+            for f in new_files:
+                if f and f.filename:
+                    fp = save_upload(f, "regulations")
+                    if fp: file_paths.append(fp)
+            
+            if file_paths:
+                regulation["files"] = file_paths
+                regulation["file"] = file_paths[0]
         regulation.update({
             "title": title,
             "version": version,
@@ -2069,7 +2093,10 @@ async def delete_regulation(request: Request, regulation_index: int):
     if require_admin(request): return require_admin(request)
     regulation = get_item(regulations, regulation_index)
     if regulation is not None:
-        delete_uploaded_file(regulation.get("file"))
+        if regulation.get("files"):
+            for f in regulation["files"]: delete_uploaded_file(f)
+        elif regulation.get("file"):
+            delete_uploaded_file(regulation.get("file"))
         regulations.pop(regulation_index)
         save_data()
     return RedirectResponse("/regulations", status_code=302)
