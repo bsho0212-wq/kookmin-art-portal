@@ -44,8 +44,12 @@ def safe_filename(filename: str) -> str:
 def save_upload(file: UploadFile | None, subdir: str) -> str | None:
     if not file or not file.filename: return None
     path = f"{subdir}/{safe_filename(file.filename)}"
+    ctype = file.content_type
+    if not ctype or ctype == "application/octet-stream" or ctype == "text/plain":
+        import mimetypes
+        ctype = mimetypes.guess_type(file.filename)[0] or "application/octet-stream"
     try:
-        supabase.storage.from_(BUCKET_NAME).upload(path, file.file.read(), {"content-type": file.content_type})
+        supabase.storage.from_(BUCKET_NAME).upload(path, file.file.read(), {"content-type": ctype})
         return supabase.storage.from_(BUCKET_NAME).get_public_url(path)
     except: return None
 
