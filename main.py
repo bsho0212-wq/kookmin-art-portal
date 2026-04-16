@@ -1086,7 +1086,7 @@ def render_notice_edit_form_page(notice: dict, index: int) -> HTMLResponse:
                 </select>
             </label>
             <label>내용<textarea name="content" required>{h(notice.get('content'))}</textarea></label>
-            <label>새 첨부파일<input type="file" name="file"></label>
+            <label>새 파일 추가 (기존 파일 덮어씌움, 여러 개 선택 가능)<input type="file" name="files" multiple></label>
             <p class="muted">파일을 새로 올리지 않으면 기존 첨부파일을 유지합니다.</p>
             <div class="actions">
                 <button class="btn" type="submit">수정 저장</button>
@@ -1177,7 +1177,7 @@ def render_notice_form_page() -> HTMLResponse:
                 </select>
             </label>
             <label>내용<textarea name="content" required></textarea></label>
-            <label>첨부파일<input type="file" name="file"></label>
+            <label>첨부파일 (여러 개 선택 가능, PDF/HWP/DOCX 등)<input type="file" name="files" multiple></label>
             <button class="btn" type="submit">등록</button>
         </form>
     </div>
@@ -1350,7 +1350,7 @@ def render_meeting_form_page() -> HTMLResponse:
             <label>장소<input type="text" name="location" required></label>
             <label>안건<textarea name="agenda" required></textarea></label>
             <label>세부 내용<textarea name="content"></textarea></label>
-            <label>첨부파일<input type="file" name="file"></label>
+            <label>첨부파일 (여러 개 선택 가능, PDF/HWP/DOCX 등)<input type="file" name="files" multiple></label>
             <button class="btn" type="submit">등록</button>
         </form>
     </div>
@@ -1371,7 +1371,7 @@ def render_meeting_edit_form_page(meeting: dict, index: int) -> HTMLResponse:
             <label>장소<input type="text" name="location" value="{h(meeting.get('location'))}" required></label>
             <label>안건<textarea name="agenda" required>{h(meeting.get('agenda'))}</textarea></label>
             <label>세부 내용<textarea name="content">{h(meeting.get('content'))}</textarea></label>
-            <label>새 첨부파일<input type="file" name="file"></label>
+            <label>새 파일 추가 (기존 파일 덮어씌움, 여러 개 선택 가능)<input type="file" name="files" multiple></label>
             <p class="muted">파일을 새로 올리지 않으면 기존 첨부파일을 유지합니다.</p>
             <div class="actions">
                 <button class="btn" type="submit">수정 저장</button>
@@ -1394,7 +1394,7 @@ def render_regulation_edit_form_page(regulation: dict, index: int) -> HTMLRespon
             <label>버전<input type="text" name="version" value="{h(regulation.get('version'))}" required></label>
             <label>시행일<input type="text" name="effective_date" value="{h(regulation.get('effective_date'))}" required></label>
             <label>설명<textarea name="description">{h(regulation.get('description'))}</textarea></label>
-            <label>새 첨부파일<input type="file" name="file"></label>
+            <label>새 파일 추가 (기존 파일 덮어씌움, 여러 개 선택 가능)<input type="file" name="files" multiple></label>
             <p class="muted">파일을 새로 올리지 않으면 기존 첨부파일을 유지합니다.</p>
             <div class="actions">
                 <button class="btn" type="submit">수정 저장</button>
@@ -1605,7 +1605,7 @@ def render_regulation_form_page() -> HTMLResponse:
             <label>버전<input type="text" name="version" required></label>
             <label>시행일<input type="text" name="effective_date" required></label>
             <label>설명<textarea name="description"></textarea></label>
-            <label>첨부파일<input type="file" name="file"></label>
+            <label>첨부파일 (여러 개 선택 가능, PDF/HWP/DOCX 등)<input type="file" name="files" multiple></label>
             <button class="btn" type="submit">등록</button>
         </form>
     </div>
